@@ -1,22 +1,23 @@
-// HAZI TECH
-// Program by Hasitha Jayasundara
-// Visit my YouTube Channel - http://www.youtube.com/c/HAZITECH?sub_confirmation=1
-
 #include "Arduino.h"
 #include <FastLED.h>
-#include <WS2812Serial.h>
-#define USE_WS2812SERIAL
 
-#define LED_PIN 1             //LED Strip Signal Connection 
-#define ParkSignal 8          //Park Signal Connection
-#define BrakeSignal 7         //Brake Signal Connection
-#define LeftSignal 9          //Left Blinker Signal Connection
-#define RightSignal 10         //Right Blinker Signal Connection
-#define ReverseSignal 11      //Reverse Signal Connection
+#include "FastLED_RGBW.h"
 
-#define NUM_LEDS 28           //Total no of LEDs in two LED strips (eg. Use 40 here for two 20 LED strips)
+//#include <WS2812Serial.h>
+//#define USE_WS2812SERIAL
 
-#define BlinkerLEDs NUM_LEDS/2 
+#define DATA_PIN 0           //LED Strip Signal Connection 
+#define ParkSignal 1          //Park Signal Connection
+#define BrakeSignal 3         //Brake Signal Connection
+#define LeftSignal 2          //Left Blinker Signal Connection
+#define RightSignal 4         //Right Blinker Signal Connection
+#define ReverseSignal 5      //Reverse Signal Connection
+
+#define NUM_LEDS 14           //Total no of LEDs in two LED strips (eg. Use 40 here for two 20 LED strips)
+
+//#define BlinkerLEDs NUM_LEDS/2 
+#define BlinkerLEDsLeft NUM_LEDS -12 
+#define BlinkerLEDsRight NUM_LEDS -10 
 
 int BlinkerSpeed = 30;        //Turn Signal Running LED Speed. Adjust this to match with your vehicle turn signal speed.
 int BlinkerOffDelay = 250;    //Turn Signal Off time. Adjust this to match with your vehicle turn signal speed.
@@ -24,12 +25,14 @@ int BlinkerOffDelay = 250;    //Turn Signal Off time. Adjust this to match with 
 int StartupSpeed = 55;
 int ParkDetect = 0;
 
-CRGB leds[NUM_LEDS];
+CRGBW leds[NUM_LEDS];
+CRGB *ledsRGB = (CRGB *) &leds[0];
+int r,r_dim,g,g_dim,b,b_dim,w,w_dim;
 
 
 void setup() 
 {
-FastLED.addLeds<SK6812, LED_PIN, GRB>(leds, NUM_LEDS);
+FastLED.addLeds<WS2812B, DATA_PIN, RGB>(ledsRGB, getRGBWsize(NUM_LEDS));
 pinMode(ParkSignal, INPUT);
 pinMode(BrakeSignal, INPUT);
 pinMode(LeftSignal, INPUT);
@@ -125,7 +128,7 @@ delay (BlinkerOffDelay);
 if((digitalRead(LeftSignal)==1)&&(digitalRead(RightSignal)==1)&&(digitalRead(BrakeSignal)==0)) //Dual Blinker / Hazard
 {
 MiddleOff();
-DualBlinker();
+//DualBlinker();
 LeftDim();
 RightDim();
 delay (BlinkerOffDelay);
@@ -136,7 +139,7 @@ if((digitalRead(LeftSignal)==1)&&(digitalRead(RightSignal)==1)&&(digitalRead(Bra
 LeftDim();
 RightDim();
 BrakeMiddle();
-DualBlinker();
+//DualBlinker();
 LeftDim();
 RightDim();
 delay (BlinkerOffDelay);
@@ -200,7 +203,7 @@ if((digitalRead(LeftSignal)==1)&&(digitalRead(RightSignal)==1)&&(digitalRead(Bra
 LeftDim();
 RightDim();
 ParkMiddle();
-DualBlinker();
+//DualBlinker();
 LeftDim();
 RightDim();
 delay (BlinkerOffDelay);
@@ -211,7 +214,7 @@ if((digitalRead(LeftSignal)==1)&&(digitalRead(RightSignal)==1)&&(digitalRead(Bra
 LeftDim();
 RightDim();
 BrakeMiddle();
-DualBlinker();
+//DualBlinker();
 LeftDim();
 RightDim();
 delay (BlinkerOffDelay);
@@ -222,41 +225,22 @@ delay (BlinkerOffDelay);
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void ParkON()
 {
   for (int j = ((NUM_LEDS/2)-1); j >= 0; j--)
   {
-    leds[j] = CRGB(30, 0, 0);
-    leds[j+1] = CRGB(0, 0, 0);
-    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGB(30, 0, 0);
-    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)-1] = CRGB(0, 0, 0);
+    leds[j] = CRGBW(30, 0, 0, 0);
+    leds[j+1] = CRGBW(0, 0, 0, 0);
+    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGBW(30, 0, 0, 0);
+    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)-1] = CRGBW(0, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
   
   for (int i = 0; i < (NUM_LEDS/2); i++)
   {
-    leds[i] = CRGB(30, 0, 0);
-    leds[(NUM_LEDS-1)-i] = CRGB(30, 0, 0);
+    leds[i] = CRGBW(30, 0, 0, 0);
+    leds[(NUM_LEDS-1)-i] = CRGBW(30, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
@@ -264,8 +248,8 @@ void ParkON()
 
   for (int j = ((NUM_LEDS/2)-1); j >= 0; j--)
   {
-    leds[j] = CRGB(255, 0, 0);
-    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGB(255, 0, 0);
+    leds[j] = CRGBW(255, 0, 0, 0);
+    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGBW(255, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
@@ -274,7 +258,7 @@ void ParkON()
   {  
     for (int i = 0; i < NUM_LEDS; i++)
     {
-    leds[i] = CRGB(j, 0, 0);
+    leds[i] = CRGBW(j, 0, 0, 0);
     }
     FastLED.show();  
     delay (5);
@@ -287,7 +271,7 @@ void ParkOFF()
   {  
     for (int i = 0; i < NUM_LEDS; i++)
     {
-    leds[i] = CRGB(j, 0, 0);
+    leds[i] = CRGBW(j, 0, 0, 0);
     }
     FastLED.show();  
     delay (5);
@@ -295,34 +279,34 @@ void ParkOFF()
 
   for (int j = 0; j <= ((NUM_LEDS/2)-1); j++)
   {
-    leds[j] = CRGB(255, 0, 0);
-    leds[j-1] = CRGB(30, 0, 0);
-    leds[(NUM_LEDS-1)-j] = CRGB(255, 0, 0);
-    leds[(NUM_LEDS)-j] = CRGB(30, 0, 0);
+    leds[j] = CRGBW(255, 0, 0, 0);
+    leds[j-1] = CRGBW(30, 0, 0, 0);
+    leds[(NUM_LEDS-1)-j] = CRGBW(255, 0, 0, 0);
+    leds[(NUM_LEDS)-j] = CRGBW(30, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
 
-  leds[((NUM_LEDS/2)-1)] = CRGB(30, 0, 0);
-  leds[((NUM_LEDS/2)-1)+1] = CRGB(30, 0, 0);
+  leds[((NUM_LEDS/2)-1)] = CRGBW(30, 0, 0, 0);
+  leds[((NUM_LEDS/2)-1)+1] = CRGBW(30, 0, 0, 0);
   FastLED.show();
 
     for (int j = ((NUM_LEDS/2)-1); j >= 0; j--)
   {
-    leds[j] = CRGB(30, 0, 0);
-    leds[j+1] = CRGB(0, 0, 0);
-    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGB(30, 0, 0);
-    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)-1] = CRGB(0, 0, 0);
+    leds[j] = CRGBW(30, 0, 0, 0);
+    leds[j+1] = CRGBW(0, 0, 0, 0);
+    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)] = CRGBW(30, 0, 0, 0);
+    leds[(NUM_LEDS/2-1)+((NUM_LEDS/2)-j)-1] = CRGBW(0, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
   
   for (int j = 0; j <= ((NUM_LEDS/2)-1); j++)
   {
-    leds[j] = CRGB(30, 0, 0);
-    leds[j-1] = CRGB(0, 0, 0);
-    leds[(NUM_LEDS-1)-j] = CRGB(30, 0, 0);
-    leds[(NUM_LEDS)-j] = CRGB(0, 0, 0);
+    leds[j] = CRGBW(30, 0, 0, 0);
+    leds[j-1] = CRGBW(0, 0, 0, 0);
+    leds[(NUM_LEDS-1)-j] = CRGBW(30, 0, 0, 0);
+    leds[(NUM_LEDS)-j] = CRGBW(0, 0, 0, 0);
     FastLED.show();
     delay (StartupSpeed);    
   }
@@ -332,34 +316,34 @@ void AllOff()
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();  
 }
 
 void LeftOff()
 {
-  for (int i = 0; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = 0; i < (NUM_LEDS - BlinkerLEDsRight); i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void RightOff()
 {
-  for (int i = BlinkerLEDs; i < NUM_LEDS; i++)
+  for (int i = 0; i < (NUM_LEDS - BlinkerLEDsRight); i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void MiddleOff()
 {
-  for (int i = BlinkerLEDs; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = (BlinkerLEDsLeft + BlinkerLEDsRight); i < (NUM_LEDS - (BlinkerLEDsLeft + BlinkerLEDsRight)); i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();  
 }
@@ -368,7 +352,7 @@ void Reverse()
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(255, 255, 255);
+    leds[i] = CRGBW(255, 255, 255,255);
   }
     FastLED.show();  
 }
@@ -377,16 +361,16 @@ void BrakeFull()
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(255, 0, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);
   }
     FastLED.show();  
 }
 
 void BrakeMiddle()
 {
-  for (int i = BlinkerLEDs; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = (BlinkerLEDsLeft + BlinkerLEDsRight); i < (NUM_LEDS - (BlinkerLEDsLeft + BlinkerLEDsRight)); i++)
   {
-    leds[i] = CRGB(255, 0, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);
   }
     FastLED.show();  
 }
@@ -395,62 +379,86 @@ void ParkFull()
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(60, 0, 0);
+    leds[i] = CRGBW(60, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void ParkMiddle()
 {
-  for (int i = BlinkerLEDs; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = (BlinkerLEDsLeft + BlinkerLEDsRight); i < (NUM_LEDS - (BlinkerLEDsLeft + BlinkerLEDsRight)); i++)
   {
-    leds[i] = CRGB(60, 0, 0);
+    leds[i] = CRGBW(60, 0, 0, 0);
   }
     FastLED.show();  
 }
 
 void LeftBlinker()
 {
-  for (int i = (BlinkerLEDs-1); i >= 0; i--)
+  for (int i = (BlinkerLEDsLeft-1); i >= 0; i--)
   {
-    leds[i] = CRGB(255, 65, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);  // SK6812
     FastLED.show();
-    delay (BlinkerSpeed);    
+    delay (BlinkerSpeed);
+
+    leds[i] = CRGBW(255, 255, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 255);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);      
   }
 }
 
 void LeftDim()
 {
-  for (int i = 0; i < BlinkerLEDs; i++)
+  for (int i = 0; i < BlinkerLEDsLeft; i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void LeftLit()
 {
-  for (int i = 0; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = 0; i < (NUM_LEDS - BlinkerLEDsLeft); i++)
   {
-    leds[i] = CRGB(75, 0, 0);
+    leds[i] = CRGBW(75, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void LeftFull()
 {
-  for (int i = 0; i < (NUM_LEDS - BlinkerLEDs); i++)
+  for (int i = 0; i < (NUM_LEDS - BlinkerLEDsLeft); i++)
   {
-    leds[i] = CRGB(255, 0, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void RightBlinker()
 {
-  for (int i = (NUM_LEDS - BlinkerLEDs); i < NUM_LEDS; i++)
+  for (int i = (BlinkerLEDsRight -1); i >= 2; i--)
   {
-    leds[i] = CRGB(255, 65, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+
+    leds[i] = CRGBW(255, 255, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 255);  // SK6812
     FastLED.show();
     delay (BlinkerSpeed);
   }
@@ -458,38 +466,71 @@ void RightBlinker()
 
 void RightDim()
 {
-   for (int i = (NUM_LEDS - BlinkerLEDs); i < NUM_LEDS; i++)
+   for (int i = 1; i < BlinkerLEDsRight; i++)
   {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGBW(0, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void RightLit()
 {
-  for (int i = BlinkerLEDs; i < NUM_LEDS; i++)
+  for (int i = BlinkerLEDsRight; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(75, 0, 0);
+    leds[i] = CRGBW(75, 0, 0, 0);
   }
     FastLED.show();
 }
 
 void RightFull()
 {
-  for (int i = BlinkerLEDs; i < NUM_LEDS; i++)
+  for (int i = (BlinkerLEDsLeft + BlinkerLEDsRight) ; i < NUM_LEDS; i++)
   {
-    leds[i] = CRGB(255, 0, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);
   }
     FastLED.show();
 }
 
+/*
 void DualBlinker()
 {
-  for (int i = (BlinkerLEDs-1); i >= 0; i--)
+  for (int i = BlinkerLEDsLeft -1; i >= 0; i--)
   {
-    leds[i] = CRGB(65, 255, 0);
-    leds[NUM_LEDS-1-i] = CRGB(65, 255, 0);
+    leds[i] = CRGBW(255, 0, 0, 0);  // SK6812
     FastLED.show();
     delay (BlinkerSpeed);
+
+    leds[i] = CRGBW(255, 255, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 255);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+  }
+  for (int i = BlinkerLEDsRight -1; i >= 2; i--)
+  {
+    leds[i] = CRGBW(255, 0, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+
+    leds[i] = CRGBW(255, 255, 0, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 0);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
+    leds[i] = CRGBW(255, 255, 255, 255);  // SK6812
+    FastLED.show();
+    delay (BlinkerSpeed);
+    
   }
 }
+*/
